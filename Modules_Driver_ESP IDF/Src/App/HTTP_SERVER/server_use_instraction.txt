@@ -1,0 +1,80 @@
+/******************* Http server driver use ********************/
+
+//---------------------------
+Driver can used as -> http server or https server
+ //---------------------------           
+if http :
+  1-set macro " HTTP_SERVER_USE_SSL  0"
+  2-port 80    
+  3- endpoints and count set point handler ,mathod ,url
+  
+  ip that the device take after connect to wifi it take ip that access this server       
+//---------------------------                     
+if https :
+  1-set macro " HTTP_SERVER_USE_SSL  1"
+  2-port 443
+  2-must add cer&key for https server 
+    I made 2 files for them add the new content on it (cer & key self-signed from openssl in pc ( valid for 1 year))  
+    
+    ->openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes (cer & key self-signed)
+                   
+
+//-------------
+            
+ test by -> http://192.168.43.84/hello from any browser or CMD ip can change copy after connect to wifi, 
+            curl -X POST http://192.168.43.84/echo -d "Aya Test" from CMD
+            
+         -> curl -k https://192.168.43.84/hello from CMD 
+            curl -k -X POST https://192.168.43.84/echo -d "Aya Test" from CMD
+         
+         
+  //-------- ----------------------------------------------
+ ********************** examble***************
+       //------- http client inti-------- 
+    static ServerEndpoint_t endpoints[] = 
+    {
+        {
+            .uri = "/hello",
+            .method = HTTP_GET,
+            .handler = hello_handler
+        },
+        {
+            .uri = "/echo",
+            .method = HTTP_POST,
+            .handler = echo_handler
+        }
+    };
+    
+        /* Server config (HTTPs only) */
+    static HttpServerConfig_t server_cfg =
+     {
+        .use_https = HTTP_SERVER_USE_SSL,
+        .port = HTTP_SERVER_PORT,
+        .endpoints = endpoints,
+        .endpoint_count = 2
+     };
+     
+       HttpServer_Init(&server_cfg);
+       HttpServer_Start();
+  /* ===================== HTTP server Handlers ===================== */
+/* GET http://ESP_IP/hello */
+static esp_err_t hello_handler(httpd_req_t *req)
+{
+    const char *resp = "Hello HTTP Server Driver from esp!";
+    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+    ESP_LOGI(TAG, "From get hello server");
+    return ESP_OK;
+}
+/* POST http://ESP_IP/echo */
+static esp_err_t echo_handler(httpd_req_t *req)
+{
+    char buf[128];
+    int len = httpd_req_recv(req, buf, sizeof(buf));
+
+    ESP_LOGI(TAG, "Received %d bytes", len);
+
+    httpd_resp_send(req, buf, len);
+    return ESP_OK;
+}
+       
+         

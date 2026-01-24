@@ -1,0 +1,62 @@
+/******************* Http client driver use ********************/
+
+//---------------------------
+Driver can used as -> http client or https client
+ //---------------------------           
+if http :
+  1-set macro " HTTP_CLIENT_USE_SSL  0"
+  2-cert_pem  NULL                   
+  3-timeout 5000 ms                     
+//---------------------------                     
+if https :
+  1-set macro " HTTP_CLIENT_USE_SSL  1"
+  2-add cert_pem if not added driver deal with bundel  
+     cert_pem need to make variable to store it and assign pointer to cert_pem                  
+  3-timeout 15000 ms
+  
+  URL -> http/-> port 80 ,https/->port 443 from url so no need to set port
+//---------------------------  
+Driver support -> one try or Retry
+   each mode has own function 
+    if need retry assign macro  MAX_RETRY , RETRY_DELAY_MS
+    
+    
+//-------------
+ test by -> http://httpbin.org/post , https://httpbin.org/post with bundel 
+         -> https://httpbin.org/get?device=ESP32&mode=GET /*use bundel cert*/
+         
+         
+  //-------- ----------------------------------------------
+ ********************** examble***************
+       //------- http client inti-------- 
+      HttpClient_Init();
+      HttpResponse_t resp;
+      
+      HttpRetryConfig_t retry_cfg = 
+      {
+        .max_retry = MAX_RETRY,
+        .retry_delay_ms = RETRY_DELAY_MS
+     };
+ 
+     //============== Http client  ============
+  char payload[128];
+ snprintf(payload, sizeof(payload),
+         "{\"device\":\"ESP32\",\"pot\":%d ,\"Distance\":%f ,\"Receive data\":%s}", pot_value,ds,rx_data);
+
+  HttpRequest_t req = 
+  {
+     .url = HTTP_CLIENT_URL,
+     .method = HTTP_CLIENT_METHOD,
+     .payload = payload,
+     .content_type = HTTP_CLIENT_CONTENET_TYPE,
+     .timeout_ms = HTTP_CLIENT_TIMEOUT_MS,
+     .cert_pem = NULL
+ };
+esp_err_t err = HttpClient_SendRequest(&req, &resp);
+err = HttpClient_SendRequestWithRetry(&req, &resp, &retry_cfg);
+ if(err == ESP_OK)
+  {
+    ESP_LOGI(TAG, "Response:\n%s", resp.response);
+  }
+   HttpClient_FreeResponse(&resp);
+             

@@ -1,0 +1,95 @@
+/******************* MQTT driver use ********************/
+
+//---------------------------
+Driver can used as -> MQTT ,MQTTs
+ //---------------------------           
+if mqtt :
+  1-set macro " MQTT_USE_TLS  0"
+  2-set macro " MQTT_USE_AUTHANTICATION  0 or 1 to use authantication"
+  3-port write on URL    
+  4-Handler to parse subscribe
+  
+  ip that the device take after connect to wifi it take ip that access this server       
+//---------------------------                     
+if mqtts :
+  1-set macro " MQTT_USE_TLS  1"
+  2-set macro " MQTT_USE_AUTHANTICATION  0 or 1 to use authantication"
+  3-port write on URL
+  4-must add cer for mqtt
+    I made 1 files to add the new content on it               
+  5-Handler to parse subscribe
+    
+//-------------
+            
+ test by -> "mqtt://broker.hivemq.com" NO authantication
+         -> "mqtt://192.168.43.33:1883" local mosqutto  use authantication
+             mosquitto -v
+             mosquitto_sub -h 192.168.43.33 -p 1883 -u AyaRamadan -P aya -t "aya/#" -v
+             
+             mosquitto_pub -h 192.168.43.33 -p 1883 -u AyaRamadan -P aya -t aya/control -m ON
+             
+          -> "mqtts://bb29bf34b7f94af884e955f5719820b3.s1.eu.hivemq.cloud:8883" hivemq cloud cluster 
+              use TLS(cer-> mqtt_cer.pem) & credintial authantication
+             
+             -> openssl s_client -showcerts -connect xxxxxx.s1.eu.hivemq.cloud:8883  certificate from Lab
+             
+  //-------- ----------------------------------------------
+ ********************** examble***************
+       //------- mqtt client inti-------- 
+mqtt_config_t mqtt_cfg = {
+    .uri       = MQTT_BROKER_URI,
+    .client_id = MQTT_CLIENT_ID,
+    .cb        = mqtt_cb,
+    .username  = MQTT_USERNAME,
+    .password  = MQTT_PASSWORD,
+    .cert_pem  = MQTT_CERT_PEM
+};
+
+mqtt_driver_init(&mqtt_cfg);
+
+  /* ===================== MQTT server Handlers ===================== */
+
+void mqtt_cb(mqtt_event_t evt,
+             const char *topic,
+             int topic_len,
+             const char *data,
+             int data_len)
+{
+    switch (evt) {
+
+    case MQTT_EVT_CONNECTED:
+        ESP_LOGI("APP", "MQTT Connected");
+
+        mqtt_driver_subscribe("aya/control", 0);
+        mqtt_driver_publish("aya/test", "HELLO_FROM_ESP", 0, false);
+        break;
+
+    case MQTT_EVT_DATA:
+        ESP_LOGI("APP", "RX Topic=%.*s Data=%.*s",topic_len, topic,data_len, data);
+
+       char msg[MQTT_MAX_PAYLOAD];
+       int len = data_len;
+       if (len >= MQTT_MAX_PAYLOAD)
+           len = MQTT_MAX_PAYLOAD - 1;
+ 
+       memcpy(msg, data, len);
+       msg[len] = '\0';
+        if(!strcmp(msg,"ON"))
+        {
+			Gpio_WritePinValue(LED,1);
+			vTaskDelay(100);
+			Gpio_WritePinValue(LED,0);
+		}
+
+        break;
+
+    case MQTT_EVT_DISCONNECTED:
+        ESP_LOGW("APP", "MQTT Disconnected");
+        break;
+
+    default:
+        break;
+    }
+}
+
+         
