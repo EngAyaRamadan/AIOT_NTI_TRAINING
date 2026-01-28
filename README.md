@@ -2,11 +2,11 @@
 
 
 
-**📚AIoT Track – Weekly Summary**
+#### **📚AIoT Track – Weekly Summary**
 
 This repository reflects my progress during the first weeks of the AIoT Track at NTI, where the focus gradually shifted from programming fundamentals to embedded systems design and real-time applications.
 
-**Week 1 – C Programming Foundations**
+#### **Week 1 – C Programming Foundations**
 
  1.Refreshing C programming fundamentals with an embedded mindset
 
@@ -22,7 +22,7 @@ This repository reflects my progress during the first weeks of the AIoT Track at
 
 ---
 
-**Week 2 – Embedded Modules & Communication**
+#### **Week 2 – Embedded Modules & Communication**
 
 Building structured modules using available libraries for:
 
@@ -31,7 +31,7 @@ Building structured modules using available libraries for:
 
 Understanding how to wrap libraries into clean, reusable modules
 
-Developing a small IoT project:
+**Developing a small IoT project:**
 
  1.Reading a potentiometer via ADC
 
@@ -44,9 +44,9 @@ Developing a small IoT project:
 
 ---
 
-**Week 3 – RTOS & System Design**
+#### **Week 3 – RTOS & System Design**
 
-Introduction to RTOS concepts:
+**Introduction to RTOS concepts:**
 
  1.OS, Kernel, Scheduler
 
